@@ -1,60 +1,78 @@
 const path = require('path')
+const { config, engine } = require('express-edge');
 const express = require('express')
 const app = new express()
+const mongoose = require('mongoose')
+const bodyParser = require('body-parser')
+const User = require('./database/models/Users');
+const { response } = require('express');
+const { resourceUsage } = require('process');
+const { Console } = require('console');
+const { update } = require('./database/models/Users');
+const { runInNewContext } = require('vm');
+
+mongoose.connect('mongodb://localhost:27017/ObjectivesDataBase', { useFindAndModify: false, useUnifiedTopology: true, useNewUrlParser: true })
 
 // app.get('/',(request, response)=>{
 // response.json({
 //     name: 'Fernando Ramos'
 // });
-// })
+// }) 
 
 app.use(express.static('public'))
+app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({ extended: true }))
+app.use(engine);
 
-app.get('/',(request, response)=>{
-    response.sendFile(path.resolve(__dirname, 'index.html'));
+app.set('views', `${__dirname}/views`);
+
+app.get('/', async (req, res)=>{
+    const users = await User.find({});
+
+    res.render('index', {
+        users}
+        )
     })
-    
-app.get('/contact',(request, response)=>{
-        response.sendFile(path.resolve(__dirname, 'contact.html'))
+
+app.get('/user/:id?', async (req, res)=>{
+    const id = req.params.id;
+    if (id == '0'){
+        res.render('user',{user:{_id:'',Id:'', Nombre:''}});
+    }
+    else{
+        const user = await User.findById(id);
+        res.render('user', {user});
+    }
 })
 
-app.get('/about',(request, response)=>{
-    response.sendFile(path.resolve(__dirname, 'about.html'))
+app.post('/user/new', async (req, res)=>{
+     const user = req.body;
+     
+    if(user._id == 0){
+        user._id =null;
+        User.create(user,(err, user )=>{
+            console.log(err, user)
+        })
+        res.redirect('/');
+    }
+    else{
+        User.findByIdAndUpdate(user._id,{
+            Nombre: user.Nombre
+        },(err, res)=>{
+            console.log(err, user)
+        })
+        res.redirect('/');
+    }
 })
 
-
+app.get('/user/delete/:id', (req, res)=> {
+    const id = req.params.id;
+    User.findByIdAndRemove(id,(err, res)=>{
+    console.log(err, res)
+    })
+    res.redirect('/');
+})
 
 app.listen(3000, ()=>{
-    console.log('App listening in port 3000')
+    console.log('The App listening in port 3000')
 })
-
-
-
-// const http = require('http')
-// const fs = require('fs')
-
-// const aboutPage = fs.readFileSync('about.html')
-// const contactPage = fs.readFileSync('contact.html')
-// const homePage = fs.readFileSync('index.html')
-
-// const server = http.createServer((request, response)=> {
-// console.log(request.url);
-
-// if(request.url === '/about'){
-//     response.end('The About page');
-// }
-// else if (request.url === '/contact')
-// {
-//     response.end('The Contact page');
-// }
-// else if (request.url === '/')
-// {
-// response.end(homePage);
-// }
-// else{
-//     response.writeHead(404);
-//     response.end('The page was not found');
-// }
-// })
-
-// server.listen(3000);

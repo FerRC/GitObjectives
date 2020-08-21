@@ -1,0 +1,30 @@
+@layout('layouts.app')
+
+@section('content')
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+    <form action="/user/0" method="GET" class="text-center">
+    <div class="table">
+      @each(user in users)
+    <div class="row">
+      <div class="col-sm-2">
+        {{user.Id}}
+      </div>
+      <div class="col-sm-8">
+        <a href="/user/{{user._id}}">{{user.Nombre}}</a>
+      </div>
+      <div class="col-sm-2">
+        <a href="/user/delete/{{user._id}}">Delete</a>
+      </div>
+    </div>
+    @endeach
+  </div>
+    <div class="control-group">
+    <div class="form-group">
+      <button class="btn btn-primary">Create</button>
+    </div>
+    </div>
+    </form>
+  </div>
+  </div>  
+@endsection
