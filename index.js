@@ -74,5 +74,5 @@ app.get('/user/delete/:id', (req, res)=> {
 })
 
 app.listen(3000, ()=>{
-    console.log('The App listening in port 3000')
+    console.log('The App listening and ready  in port 3000')
 })
